@@ -301,7 +301,7 @@ function main(){
         delay = subdivide(imageHolder, idIterator, delay,increasedDelay);
       }, delay);
     }
-  }, 200);
+  }, 2000);
 }
   
 
