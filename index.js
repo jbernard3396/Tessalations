@@ -301,6 +301,9 @@ function main(){
         delay = subdivide(imageHolder, idIterator, delay,increasedDelay);
       }, delay);
     }
+    setTimeout(() => {
+      console.log('done');
+    }, delay);
   }, 2000);
 }
   
