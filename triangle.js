@@ -35,10 +35,10 @@ class Triangle {
     let ys = [p1.y, p2.y, p3.y];
     xs.sort(compareInts);
     ys.sort(compareInts);
-    let x = Math.round(xs[0]);
-    let y = Math.round(ys[0]);
-    let w = Math.round(xs[2] - xs[0]);
-    let h = Math.round(ys[2] - ys[0]);
+    let x = xs[0];
+    let y = ys[0];
+    let w = xs[2] - xs[0];
+    let h = ys[2] - ys[0];
     return { x, y, w, h };
   }
 
@@ -53,9 +53,9 @@ class Triangle {
   
   getSubTriangles() {
     let { p1, p2, p3 } = this;
-    let p4 = Point.midpoint(p1, p2, randFloat(.3,.7));
-    let p5 = Point.midpoint(p1, p3, randFloat(.3,.7));
-    let p6 = Point.midpoint(p2, p3, randFloat(.3,.7));
+    let p4 = Point.midpoint(p1, p2, randNearHalf());
+    let p5 = Point.midpoint(p1, p3, randNearHalf());
+    let p6 = Point.midpoint(p2, p3, randNearHalf());
     return [
       new Triangle(p1, p4, p5),
       new Triangle(p2, p4, p6),

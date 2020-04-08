@@ -17,8 +17,7 @@ class Color {
 
     let rgb = [0,0,0];
     let count = 0;
-    let i = 0;
-    while ((i += blockSize) < arr.length) {
+    for (let i = 0; i < arr.length; i += blockSize) {
       count++;
       rgb[0] += arr[i];
       rgb[1] += arr[i+1];
@@ -27,4 +26,12 @@ class Color {
 
     return new Color(rgb.map(x => x/count));
   }
+}
+
+function newOffscreenCanvas(w, h) {
+  if (window.OffscreenCanvas) return new OffscreenCanvas(w, h);
+  let newCanvas = document.createElement("canvas");
+  newCanvas.width = w;
+  newCanvas.height = h;
+  return newCanvas;
 }

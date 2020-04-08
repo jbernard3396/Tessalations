@@ -1,5 +1,18 @@
 img.addEventListener("load", () => {
-  imgCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+  let W = img.width
+  let H = img.height
+  canvas.width = W;
+  canvas.height = H;
+  imgCanvas = newOffscreenCanvas(W * imgRatio, H * imgRatio)
+  imgCtx = imgCanvas.getContext("2d");
+  imgCtx.drawImage(img,
+    0, 0, W, H,
+    0, 0, imgCanvas.width, imgCanvas.height
+  );
+
+  pieceCanvas = newOffscreenCanvas(canvas.width, canvas.height);
+  pieceCtx = pieceCanvas.getContext("2d");
+  
   init();
 })
 
@@ -9,7 +22,10 @@ function init() {
   let tr = new Point(0,canvas.height);
   let bl = new Point(canvas.width,0);
   let br = new Point(canvas.width,canvas.height);
-  let c = new Point(canvas.width/2, canvas.height/2);
+  let c = new Point(
+    lerp(0, canvas.width, randNearHalf()),
+    lerp(0, canvas.height, randNearHalf())
+  );
   triangles.push(
     new Triangle(tl, tr, c),
     new Triangle(br, tr, c),
@@ -18,26 +34,25 @@ function init() {
   )
 
   if (Math.random() < 0) requestAnimationFrame(tickInOrder);
-  else requestAnimationFrame(tickLargestFirst);
+  else requestAnimationFrame(tick);
 }
 
 function isRenderable(triangle) {
-  if (triangle.boundingBox.w <= 1) return false;
-  if (triangle.boundingBox.h <= 1) return false;
+  if (triangle.boundingBox.w <= 40/imgRatio) return false;
+  if (triangle.boundingBox.h <= 20/imgRatio) return false;
   return true;
 }
 
 function nextTriangle() {
-  let triangle = triangles.pop();
-  while (triangle != null && !isRenderable(triangle)) {
-    triangle = triangles.pop();
-  }
-  // return a valid triangle or undefined (no more triangles)
-  return triangle;
+  return triangles.pop();
 }
 
 function getTriangleColor(triangle) {
   let box = triangle.boundingBox;
+  box.x = Math.round(box.x * imgRatio);
+  box.y = Math.round(box.y * imgRatio);
+  box.w = Math.round(box.w * imgRatio);
+  box.h = Math.round(box.h * imgRatio);
   let imgData = imgCtx.getImageData(box.x, box.y, box.w, box.h);
   return Color.fromImageData(imgData);
 }
@@ -45,10 +60,27 @@ function getTriangleColor(triangle) {
 function compareTriangles(t1, t2) {
   let box1 = t1.boundingBox;
   let box2 = t2.boundingBox;
-  return box1.h*box1.w - box2.h*box2.w
+  return box1.h - box2.h
 }
 
-function tickLargestFirst(time) {
+function tick(time) {
+  let dontFlush = true; 
+  let iters = 0;
+  while (performance.now() - time < TICK_LENGTH) {
+    dontFlush = iterate() && dontFlush;
+    if (++iters == MAX_ITERS_PER_TICK) break;
+  }
+
+  if (!dontFlush) { //flush pieces
+    pieceCtx.globalCompositeOperation = "source-in";
+    pieceCtx.drawImage(img, 0, 0);
+    ctx.drawImage(pieceCanvas, 0, 0);
+  }
+
+  if (!done) requestAnimationFrame(tick)
+}
+
+function iterate() {
   let triangle = nextTriangle()
   
   if (triangle == null) {
@@ -56,28 +88,25 @@ function tickLargestFirst(time) {
     return;
   }
 
-  triangle.draw(ctx, getTriangleColor(triangle));
-  
-  triangle.getSubTriangles().forEach(sub => triangles.push(sub))
-  triangles.sort(compareTriangles)
-
-  requestAnimationFrame(tickLargestFirst)
-}
-
-function tickInOrder(time) {
-  let triangle = nextTriangle()
-
-  if (triangle == null) {
-    done = true;
-    return;
+  let renderable = isRenderable(triangle)
+  if (renderable) { 
+    triangle.draw(ctx, getTriangleColor(triangle));
+    
+    // largest-first traversal
+    triangle.getSubTriangles().forEach(sub => triangles.push(sub))
+    triangles.sort(compareTriangles) //slow!
+    
+    // in-order traversal
+    // triangle.getSubTriangles().forEach(sub => triangles.unshift(sub))
+  } else { //dispose img-triangle intersection to mask canvas
+    pieceCtx.globalCompositeOperation = "source-over";
+    triangle.draw(pieceCtx);
   }
-  triangle.draw(ctx, getTriangleColor(triangle));
 
-  triangle.getSubTriangles().forEach(sub => triangles.unshift(sub))
-
-  requestAnimationFrame(tickInOrder)
+  return renderable;
 }
 
+/*
 function fullTick(time) {
   let tempArr = [];
   while (triangles.length > 0) {
@@ -97,3 +126,4 @@ function fullTick(time) {
   if (!done) requestAnimationFrame(fullTick);
   return done;
 }
+*/

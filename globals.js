@@ -9,9 +9,12 @@ const srcs = [
   // "imgs/image5.png",
 ]
 
-let imgCanvas = new OffscreenCanvas(canvas.width, canvas.height)
-//TODO: make smaller. use ratio for getimagedata
-let imgCtx = imgCanvas.getContext("2d");
+let imgRatio = 1; // img will be stored (compressed) at this side-length ratio
+let imgCanvas;
+let imgCtx;
+
+let pieceCanvas;
+let pieceCtx;
 
 let img = new Image();
 img.src = srcs[Math.floor(Math.random() * srcs.length)];
@@ -21,9 +24,10 @@ let triangles = [];
 let done = false;
 let canvasImgRatio = 1;
 
-const COLOR_SKIP = 1; //higher # should improve runtime by lowering color accuracy
+const COLOR_SKIP = 4; //higher # should improve runtime by lowering color accuracy
 const TAU = 2 * Math.PI;
-const MAX_TICK_LENGTH = 100; //TODO: use this.
+const TICK_LENGTH = 200;
+const MAX_ITERS_PER_TICK = 10;
 
 function lerp(a, b, frac) {
   return (a * frac) + (b * (1-frac))
@@ -40,3 +44,7 @@ function randInt(a, b) {
 }
 
 function compareInts(a, b) { return a-b }
+
+function randNearHalf() {
+  return randInt(4,7) / 10
+}
