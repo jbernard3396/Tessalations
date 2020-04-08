@@ -6,7 +6,6 @@ const srcs = [
   "imgs/image2.jpg",
   "imgs/image3.jpg",
   "imgs/image4.jpg",
-  // "imgs/image5.png",
 ]
 
 let imgRatio = 1; // img will be stored (compressed) at this side-length ratio
@@ -19,15 +18,17 @@ let pieceCtx;
 let img = new Image();
 img.src = srcs[Math.floor(Math.random() * srcs.length)];
 
-
-let triangles = [];
+let triangles;
 let done = false;
 let canvasImgRatio = 1;
 
-const COLOR_SKIP = 4; //higher # should improve runtime by lowering color accuracy
+const COLOR_SKIP = 0; //higher # should improve runtime by lowering color accuracy
 const TAU = 2 * Math.PI;
-const TICK_LENGTH = 200;
-const MAX_ITERS_PER_TICK = 10;
+const TICK_DUR = 100; //in ms
+const MAX_ITERS_PER_TICK = Infinity; //decrese for slower ending
+const MAX_AREA_PER_TICK = 800000; //bounding box area - decrease for slower beginning
+const MIN_RENDERABLE_W = 20; // maybe set these to a percentage
+const MIN_RENDERABLE_H = 10; // of the img width/height?
 
 function lerp(a, b, frac) {
   return (a * frac) + (b * (1-frac))
