@@ -14,6 +14,8 @@ img.addEventListener("load", () => {
   pieceCanvas = newOffscreenCanvas(canvas.width, canvas.height);
   pieceCtx = pieceCanvas.getContext("2d");
   
+  MIN_RENDERABLE_W = Math.ceil(w * .01);
+  MIN_RENDERABLE_H = Math.ceil(h * .01);
   init();
 })
 
@@ -23,15 +25,15 @@ function boxArea(triangle) {
 
 function score(triangle) {
   return Math.min(triangle.boundingBox.w, triangle.boundingBox.h);
-  // return Math.random();
 }
 
 function init() {
-  triangles = new BinaryHeap(score); //use heap for largest-first
-  // triangles = []; //use array for in-order
+  if (mode == TraversalMode.RANDOM) triangles = new BinaryHeap(() => Math.random());
+  else if (mode == TraversalMode.LARGEST) triangles = new BinaryHeap(score);
+  else if (mode == TraversalMode.IN_ORDER) triangles = [];
 
   //prime with first four triangles
-  let tl = new Point(0,0);
+  let tl = new Point(0, 0);
   let tr = new Point(0,canvas.height);
   let bl = new Point(canvas.width,0);
   let br = new Point(canvas.width,canvas.height);
@@ -62,11 +64,14 @@ function isRenderable(triangle) {
 
 function getTriangleColor(triangle) {
   let box = triangle.boundingBox;
-  box.x = Math.round(box.x * imgRatio);
-  box.y = Math.round(box.y * imgRatio);
-  box.w = Math.round(box.w * imgRatio);
-  box.h = Math.round(box.h * imgRatio);
-  let imgData = imgCtx.getImageData(box.x, box.y, box.w, box.h);
+  let { x, y, w, h } = box;
+  x = Math.floor(x * imgRatio);
+  y = Math.floor(y * imgRatio);
+  w = Math.ceil(w * imgRatio);
+  h = Math.ceil(h * imgRatio);
+  if (w < 1) w = 1;
+  if (h < 1) h = 1;
+  let imgData = imgCtx.getImageData(x, y, w, h);
   return Color.fromImageData(imgData);
 }
 
@@ -93,7 +98,9 @@ function tick(time) {
     if (iters >= MAX_ITERS_PER_TICK) break;
     if (area > MAX_AREA_PER_TICK) break;
   }
-  
+
+  // console.log(area, iters);
+
   if (flushPieces) flushImagePieces();
 
   if (done) {
@@ -118,9 +125,9 @@ function iterate() {
   if (isRenderable(triangle)) { 
     triangle.draw(ctx, getTriangleColor(triangle));
     let subs = triangle.getSubTriangles()
-    subs.forEach(sub => triangles.push(sub)) // largest-first traversal
-    // subs.forEach(sub => triangles.unshift(sub)) // in-order traversal
 
+    if (mode == TraversalMode.IN_ORDER) subs.forEach(sub => triangles.unshift(sub))
+    else subs.forEach(sub => triangles.push(sub))
   } else { //dispose img-triangle intersection to piece canvas
     pieceCtx.globalCompositeOperation = "source-over";
     triangle.draw(pieceCtx);
