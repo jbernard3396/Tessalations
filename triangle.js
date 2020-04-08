@@ -35,13 +35,32 @@ class Triangle {
     return { x, y, w, h };
   }
 
+  get area2() {
+    let { p1, p2, p3 } = this;
+    return Math.abs(p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y))
+  }
+
+  get area() {
+    return this.area2 / 2
+  }
+
   draw(ctx, color="orange") {
     ctx.fillStyle = color.toString();
     ctx.beginPath();
     ctx.moveTo(this.p1.x, this.p1.y);
     ctx.lineTo(this.p2.x, this.p2.y);
     ctx.lineTo(this.p3.x, this.p3.y);
+    ctx.lineTo(this.p1.x, this.p1.y);
     ctx.fill();
+    ctx.strokeStyle = "#555";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.sqrt(this.area) / 20;
+    if (ctx.lineWidth < 4) {
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = color;
+    }
+    ctx.stroke();
+
   }
   
   getSubTriangles() {

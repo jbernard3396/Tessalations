@@ -16,10 +16,9 @@
     pieceCanvas = newOffscreenCanvas(canvas.width, canvas.height);
     pieceCtx = pieceCanvas.getContext("2d");
     
-    MIN_RENDERABLE_W = Math.ceil(w * .01);
-    MIN_RENDERABLE_H = Math.ceil(h * .01);
-
-    
+    let minw = Math.ceil((canvas.width / canvas.clientWidth) * 5);
+    let minh = Math.ceil((canvas.height / canvas.clientHeight) * 5);
+    MIN_RENDERABLE_AREA = minw * minh;
     beginTessellation()
   })
 })(); //iife
@@ -47,12 +46,8 @@ function beginTessellation() {
   else requestAnimationFrame(tick);
 }
 
-function boxArea(triangle) {
-  return triangle.boundingBox.w * triangle.boundingBox.h;
-}
-
 function score(triangle) {
-  return Math.min(triangle.boundingBox.w, triangle.boundingBox.h);
+  return triangle.area2;
 }
 
 /**
@@ -61,10 +56,7 @@ function score(triangle) {
  * @returns true if the triangle should be drawn as a solid color
  */
 function isRenderable(triangle) {
-  //TODO: maybe this should go in the Triangle class
-  if (triangle.boundingBox.w < MIN_RENDERABLE_W) return false;
-  if (triangle.boundingBox.h < MIN_RENDERABLE_H) return false;
-  return true;
+  return triangle.area > MIN_RENDERABLE_AREA;
 }
 
 /**
@@ -107,7 +99,7 @@ function tick(time) {
   while (performance.now() - time < TICK_DUR) {
     let triangle = iterate();
     if (done) break;
-    area += boxArea(triangle);
+    area += triangle.area;
     iters++;
     if (!isRenderable(triangle)) flushPieces = true;
     if (iters >= MAX_ITERS_PER_TICK) break;
@@ -116,11 +108,12 @@ function tick(time) {
 
   // console.log(area, iters);
 
-  if (flushPieces) flushImagePieces();
+  // if (flushPieces) flushImagePieces();
 
   if (done) {
     console.log("done!");
-    ctx.drawImage(img, 0, 0)
+    requestAnimationFrame(fadeToImg);
+    // setTimeout(() => ctx.drawImage(img, 0, 0), 1000);
     return;
   }
 
@@ -153,3 +146,11 @@ function iterate() {
   return triangle;
 }
 
+let fadeAlpha = 0;
+function fadeToImg() {
+  fadeAlpha += .001;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = fadeAlpha;
+  ctx.drawImage(img, 0, 0);
+  requestAnimationFrame(fadeToImg)
+}
