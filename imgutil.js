@@ -1,11 +1,11 @@
 class Color {
   constructor (...[vals]) {
-    this.vals = vals;
+    this.vals = vals.map(x => Math.round(x));
   }
 
-  get r() { return this.vals[0] }
-  get g() { return this.vals[1] }
-  get b() { return this.vals[2] }
+  get r() { return this.vals[0]; }
+  get g() { return this.vals[1]; }
+  get b() { return this.vals[2]; }
   toString() {
     return `rgb(${this.r},${this.g},${this.b})`;
   }

@@ -19,13 +19,7 @@ img.addEventListener("load", () => {
   init();
 })
 
-function boxArea(triangle) {
-  return triangle.boundingBox.w * triangle.boundingBox.h;
-}
 
-function score(triangle) {
-  return Math.min(triangle.boundingBox.w, triangle.boundingBox.h);
-}
 
 function init() {
   if (mode == TraversalMode.RANDOM) triangles = new BinaryHeap(() => Math.random());
@@ -50,8 +44,16 @@ function init() {
   else requestAnimationFrame(tick);
 }
 
+function boxArea(triangle) {
+  return triangle.boundingBox.w * triangle.boundingBox.h;
+}
+
+function score(triangle) {
+  return Math.min(triangle.boundingBox.w, triangle.boundingBox.h);
+}
+
 /**
- * check if a triangle should be represented by a solid color or not
+ * Checks if a triangle should be represented by a solid color or not
  * @param {Triangle} triangle 
  * @returns true if the triangle should be drawn as a solid color
  */
@@ -62,7 +64,12 @@ function isRenderable(triangle) {
   return true;
 }
 
+/**
+ * Finds the color for which the given triangle should be drawn 
+ * @param {Triangle} triangle 
+ */
 function getTriangleColor(triangle) {
+  //TODO: maybe this should go in the Triangle class
   let box = triangle.boundingBox;
   let { x, y, w, h } = box;
   x = Math.floor(x * imgRatio);
@@ -85,6 +92,11 @@ function flushImagePieces() {
   ctx.drawImage(pieceCanvas, 0, 0);
 }
 
+/**
+ * Handles iterating the correct number of times and flushing the piece canvas.
+ * Also requests for itself to be run again.
+ * Should be passed into requestAnimationFrame.
+ */
 function tick(time) {
   let flushPieces = false; 
   let iters = 0;
@@ -114,6 +126,9 @@ function tick(time) {
   else setTimeout(() => requestAnimationFrame(tick), Math.floor(remaining))
 }
 
+/**
+ * Processes and draws one triangle. If there are no triangles left, the done flag is set.
+ */
 function iterate() {
   let triangle = triangles.pop()
   
