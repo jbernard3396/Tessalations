@@ -12,12 +12,11 @@ const srcs = [
 let imgRatio = .25; // img will be stored (compressed) at this side-length ratio
 let imgCanvas;
 let imgCtx;
+let img = new Image();
 
 let pieceCanvas;
 let pieceCtx;
 
-let img = new Image();
-img.src = srcs[Math.floor(Math.random() * srcs.length)];
 
 let triangles;
 let done = false;
@@ -36,22 +35,3 @@ const MAX_AREA_PER_TICK = 600000; //bounding box area - decrease for slower begi
 var MIN_RENDERABLE_W;
 var MIN_RENDERABLE_H;
 
-function lerp(a, b, frac) {
-  return (a * frac) + (b * (1-frac))
-}
-
-function randFloat(a, b) {
-  let rng = b-a;
-  return (Math.random() * rng) + a
-}
-
-function randInt(a, b) {
-  let rng = b-a;
-  return Math.floor(Math.random() * rng) + a
-}
-
-function compareInts(a, b) { return a-b }
-
-function randNearHalf() {
-  return randInt(4,7) / 10
-}

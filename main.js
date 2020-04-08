@@ -1,27 +1,30 @@
-img.addEventListener("load", () => {
-  // finish setting up canvases
-  let w = img.width
-  let h = img.height
-  canvas.width = w;
-  canvas.height = h;
-  imgCanvas = newOffscreenCanvas(w * imgRatio, h * imgRatio)
-  imgCtx = imgCanvas.getContext("2d");
-  imgCtx.drawImage(img,
-    0, 0, w, h,
-    0, 0, imgCanvas.width, imgCanvas.height
-  );
-
-  pieceCanvas = newOffscreenCanvas(canvas.width, canvas.height);
-  pieceCtx = pieceCanvas.getContext("2d");
+(function init() {
+  img.src = srcs[MathHelp.randInt(0, srcs.length)];
+  img.addEventListener("load", () => {
+    // finish setting up globals with img width
+    let w = img.width
+    let h = img.height
+    canvas.width = w;
+    canvas.height = h;
+    imgCanvas = newOffscreenCanvas(w * imgRatio, h * imgRatio)
+    imgCtx = imgCanvas.getContext("2d");
+    imgCtx.drawImage(img,
+      0, 0, w, h,
+      0, 0, imgCanvas.width, imgCanvas.height
+    );
   
-  MIN_RENDERABLE_W = Math.ceil(w * .01);
-  MIN_RENDERABLE_H = Math.ceil(h * .01);
-  init();
-})
+    pieceCanvas = newOffscreenCanvas(canvas.width, canvas.height);
+    pieceCtx = pieceCanvas.getContext("2d");
+    
+    MIN_RENDERABLE_W = Math.ceil(w * .01);
+    MIN_RENDERABLE_H = Math.ceil(h * .01);
 
+    
+    beginTessellation()
+  })
+})(); //iife
 
-
-function init() {
+function beginTessellation() {
   if (mode == TraversalMode.RANDOM) triangles = new BinaryHeap(() => Math.random());
   else if (mode == TraversalMode.LARGEST) triangles = new BinaryHeap(score);
   else if (mode == TraversalMode.IN_ORDER) triangles = [];
@@ -32,8 +35,8 @@ function init() {
   let bl = new Point(canvas.width,0);
   let br = new Point(canvas.width,canvas.height);
   let c = new Point(
-    lerp(0, canvas.width, randNearHalf()),
-    lerp(0, canvas.height, randNearHalf())
+    MathHelp.lerp(0, canvas.width, MathHelp.randNearHalf()),
+    MathHelp.lerp(0, canvas.height, MathHelp.randNearHalf())
   );
   triangles.push(new Triangle(tl, tr, c))
   triangles.push(new Triangle(br, tr, c))
